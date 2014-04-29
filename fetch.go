@@ -46,11 +46,11 @@ func runFetch(cmd *Command, args []string) {
 		if len(args) >= 2 {
 			newargs := args[1:]
 			for artifactNames := range newargs {
-				mq := ForceMetadataQueryElement{artifactType, newargs[artifactNames]}
+				mq := ForceMetadataQueryElement{artifactType, []string{newargs[artifactNames]}}
 				query = append(query, mq)
 			}
 		} else {
-			mq := ForceMetadataQueryElement{artifactType, "*"}
+			mq := ForceMetadataQueryElement{artifactType, []string{"*"}}
 			query = append(query, mq)
 		}
 		files, err = force.Metadata.Retrieve(query)
