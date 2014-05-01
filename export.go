@@ -5,6 +5,7 @@ import (
 	"io/ioutil"
 	"os"
 	"path/filepath"
+	"strings"
 )
 
 var cmdExport = &Command{
@@ -33,13 +34,38 @@ func runExport(cmd *Command, args []string) {
 	if err != nil {
 		ErrorAndExit(err.Error())
 	}
-	stdObjects := make([]string, 1, len(sobjects)+1)
-	stdObjects[0] = "*"
-	for _, sobject := range sobjects {
-		if !sobject["custom"].(bool) {
-			stdObjects = append(stdObjects, sobject["name"].(string))
+	/*
+	for _, field := range sobjects {
+		if field["name"].(string) == "FeedTrackedChange" {
+			for fieldKey, fieldVal := range field {
+				fmt.Println(fieldKey, fieldVal)
+			}
+			objDescr , err := force.GetSobject(field["name"].(string))			
+			if err != nil {				
+				ErrorAndExit(err.Error())				
+			}	
+			fmt.Println(objDescr)
 		}
 	}
+	os.Exit(1)
+	*/
+	customFields := make([]string, 1, len(sobjects)+1)		
+	for _, sobject := range sobjects {
+		if !sobject["custom"].(bool) && !strings.HasSuffix(sobject["name"].(string), "__Tag") && !strings.HasSuffix(sobject["name"].(string), "__History") && ! strings.HasSuffix(sobject["name"].(string), "__Share") {
+			objDescr , err := force.GetSobject(sobject["name"].(string))			
+			if err != nil {				
+				ErrorAndExit(err.Error())
+			}					
+			for _, field := range objDescr["fields"].([]interface{}) {				
+				var fieldS = field.(map[string]interface{})
+				if fieldS["custom"].(bool){
+					customFields = append(customFields, sobject["name"].(string) + "." + fieldS["name"].(string))
+				} 
+			}
+			fmt.Println(sobject["name"], sobject["custom"])
+		}
+	}
+	os.Exit(1)	
 	query := ForceMetadataQuery{
 		{Name: "AccountSettings", Members: []string{"*"}},
 		{Name: "ActivitiesSettings", Members: []string{"*"}},
@@ -66,9 +92,9 @@ func runExport(cmd *Command, args []string) {
 		{Name: "CustomApplication", Members: []string{"*"}},
 		{Name: "CustomApplicationComponent", Members: []string{"*"}},
 		{Name: "CustomApplication", Members: []string{"*"}},
-		{Name: "CustomField", Members: []string{"*"}},
+		{Name: "CustomField", Members: customFields},
 		{Name: "CustomLabels", Members: []string{"*"}},
-		{Name: "CustomObject", Members: stdObjects},
+		{Name: "CustomObject", Members: []string{"*"}},
 		{Name: "CustomObjectTranslation", Members: []string{"*"}},
 		{Name: "CustomPageWebLink", Members: []string{"*"}},
 		{Name: "CustomSite", Members: []string{"*"}},

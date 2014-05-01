@@ -113,6 +113,8 @@ type ForceRecord map[string]interface{}
 
 type ForceSobject map[string]interface{}
 
+type ForceSobjectField map[string]interface{}
+
 type ForceCreateRecordResult struct {
 	Errors  []string
 	Id      string
